@@ -21,15 +21,15 @@ KILL_VMM_TEST=${KILL_VMM_TEST:-""}
 KATA_HYPERVISOR="${KATA_HYPERVISOR:-qemu}"
 ARCH=$(uname -m)
 
-default_runtime_type="io.containerd.runc.v2"
+default_runtime_type="io.containerd.runtime.v1.linux"
 # Type of containerd runtime to be tested
 containerd_runtime_type="${default_runtime_type}"
 # Runtime to be use for the test in containerd
 containerd_runtime_test=${RUNTIME}
-if [ -n "${SHIMV2_TEST}" ]; then
-	containerd_runtime_type="io.containerd.kata.v2"
-	containerd_runtime_test="io.containerd.kata.v2"
-fi
+#if [ -n "${SHIMV2_TEST}" ]; then
+#	containerd_runtime_type="io.containerd.kata.v2"
+#	containerd_runtime_test="io.containerd.kata.v2"
+#fi
 
 readonly runc_runtime_bin=$(command -v "runc")
 
@@ -76,12 +76,12 @@ ci_config() {
 	fi
 
 	SCRIPT_PATH=$(dirname "$(readlink -f "$0")")
-	if [ -n "${CI}" ]; then
-		(
-		echo "Install cni config"
-		${SCRIPT_PATH}/../../../.ci/configure_cni.sh
-		)
-	fi
+	#if [ -n "${CI}" ]; then
+	#	(
+	#	echo "Install cni config"
+	#	${SCRIPT_PATH}/../../../.ci/configure_cni.sh
+	#	)
+	#fi
 
 	echo "enable debug for kata-runtime"
 	sudo sed -i 's/^#enable_debug =/enable_debug =/g' ${kata_config} 
@@ -119,7 +119,7 @@ create_containerd_config() {
 
 	local runtime_type="${containerd_runtime_type}"
 	if [ "${runtime}" == "runc" ]; then
-		runtime_type="io.containerd.runc.v2"
+		runtime_type="io.containerd.runtime.v1.linux"
 	fi
 	local containerd_runtime="${runtime}"
 	if [ "${runtime_type}" == "${default_runtime_type}" ];then
@@ -337,7 +337,7 @@ main() {
 
 	git reset HEAD
 	git checkout master
-	cp "${SCRIPT_PATH}/container_restart_test.go.patch" ./integration/container_restart_test.go
+	#cp "${SCRIPT_PATH}/container_restart_test.go.patch" ./integration/container_restart_test.go
 
 	#test cri using the built/installed containerd instead of containerd built in cri
 	sed -i 's#${ROOT}/_output/containerd#/usr/local/bin/containerd#' hack/test-utils.sh
